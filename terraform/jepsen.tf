@@ -18,16 +18,8 @@ output "HA Storage S3 Bucket" {
   value = "${aws_s3_bucket.hastorage.bucket}"
 }
 
-output "Node private IPs" {
-  value = "${sort(aws_instance.node.*.private_ip)}"
-}
-
-output "Node private DNS" {
-  value = "${sort(aws_instance.node.*.private_dns)}"
-}
-
-output "Node public IPs" {
-  value = "${sort(aws_instance.node.*.public_ip)}"
+output "DB Nodes" {
+  value = "${join("\n", sort(formatlist("\nPrivate IP: %s\nPrivate DNS: %s\nPublic IP: %s", aws_instance.node.*.private_ip, aws_instance.node.*.private_dns, aws_instance.node.*.public_ip)))}"
 }
 
 resource "aws_key_pair" "jepsen" {
