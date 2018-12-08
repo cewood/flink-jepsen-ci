@@ -12,36 +12,36 @@ language: java
 install:
   # Install Terraform
   - mkdir -p ~/bin
-  - curl -sLo ~/bin/terraform.zip https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip
+  - travis_retry curl -sSLo ~/bin/terraform.zip https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip
   - unzip ~/bin/terraform.zip -d ~/bin
   - export PATH="~/bin:$PATH"
 
   # Upgrade pip
-  - sudo pip install --upgrade pip
+  - travis_retry sudo pip install --upgrade pip
 
   # Install Ansible
-  - sudo pip install ansible --progress-bar=off
+  - travis_retry sudo pip install ansible --progress-bar=off
 
   # Update package lists
-  - sudo apt-get update
+  - travis_retry sudo apt-get update
 
   # Install assume-role tool
-  - sudo apt-get install golang-go
-  - go get -u github.com/remind101/assume-role
+  - travis_retry sudo apt-get install golang-go
+  - travis_retry go get -u github.com/remind101/assume-role
 
   # Install AWS CLI
   - sudo apt-get remove python-urllib3
-  - sudo pip install --upgrade awscli --progress-bar=off
+  - travis_retry sudo pip install --upgrade awscli --progress-bar=off
 
   # Install boto
   - sudo apt-get remove python-boto
-  - sudo pip install --upgrade boto --progress-bar=off
+  - travis_retry sudo pip install --upgrade boto --progress-bar=off
 
   # Configure AWS credentials
   - ./configure-credentials.sh
 
   # Install maven 3.2.5
-  - wget https://archive.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.zip
+  - travis_retry curl -sSLo apache-maven-3.2.5-bin.zip https://archive.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.zip
   - unzip -qq apache-maven-3.2.5-bin.zip
   - rm apache-maven-3.2.5-bin.zip
   - export M2_HOME=$PWD/apache-maven-3.2.5
@@ -51,14 +51,14 @@ jobs:
   include:
     - stage: Build Flink
       script:
-        - git clone --depth 50 https://github.com/apache/flink.git
+        - travis_retry rm -rf flink && git clone --depth 50 https://github.com/apache/flink.git
         - cd flink
         - mvn ${MAVEN_COMPILE_OPTIONS} clean package -pl flink-dist,flink-end-to-end-tests/flink-datastream-allround-test -am -DskipTests -Dfast -Dhadoop.version=2.8.3
         - flink_dist=flink-${TRAVIS_BUILD_NUMBER}.tgz
         - tar czvf ${flink_dist} -C flink-dist/target/flink-*-bin/ .
-        - eval $(assume-role testing)
-        - aws s3 cp $flink_dist s3://flink-dists-204087123 --acl public-read
-        - aws s3 cp flink-end-to-end-tests/flink-datastream-allround-test/target/DataStreamAllroundTestProgram.jar s3://flink-dists-204087123/DataStreamAllroundTestProgram-${TRAVIS_BUILD_NUMBER}.jar --acl public-read
+        - travis_retry eval $(assume-role testing)
+        - travis_retry aws s3 cp $flink_dist s3://flink-dists-204087123 --acl public-read
+        - travis_retry aws s3 cp flink-end-to-end-tests/flink-datastream-allround-test/target/DataStreamAllroundTestProgram.jar s3://flink-dists-204087123/DataStreamAllroundTestProgram-${TRAVIS_BUILD_NUMBER}.jar --acl public-read
     - stage: Jepsen
       env:
         - TEST_SUITE=yarn-session
@@ -90,9 +90,9 @@ jobs:
       script:
         - ./travis-run-tests.sh
 
-notifications:
-  slack:
-    rooms:
-      - secure: "lgu8TI+tD5m5Gr7nwojbDFU6zV4+3NMrySTgvS6OydEvdivKslgJpwt19RFUeGBmedXhOAv7G4BuoJgc5/zO4CLMHE1JWMONKq++IDP0ls+TvRPMhPMrx6vbHIS79nz/zunKgGcZ1wpqCvigzJ21GgOmUtA6Ji3qg6JfAgQXiFz7CUkp17PtieJo+m0k9GrQCMhwypV1uIYdW6eyxMMHCJYgJOSREhA4oDOGLQcAoC/43WYEAU6j51YMVp8Fo9JfmvG4EvSuCoxKkD+pB0Lv/QRuT3QS1UHf+j4tv6DvnskYoh/1vjkYj+thBRjTN0B2Z6swMH0aDTsBAJfWKHillK5aYBJW3ym7pm8KPrkcWH57tuNU2jlCNrLbFOlXOkELUjcUVZapnxjELQLz8SPrcL0n6xSCMF64o4jH60w3FAgMLZhqkjOHFM5SbumSQ1PH0YauSXnyd6T9Vy33pifSxcOC4Gk4b7V04ebZTejWxCidznVWsc/uT7Y7KuWZ8ZCQdk4bDC83YYW6f4LBfni7c33KNlj6u2CMSiIB+dKh/0qjGIRBh0hV4i89e41643F0yr9E+ejlUqvud3EJfjATVqyJ/DtIdm4EDgh2CSgcZtZlPg9kAnJt36S86sAGlmUz6GHO7A3qVjEmjBGQTs6Gg/93Pm1jDo1qzi6bZNmL6OM="
-    on_success: always
-    on_failure: always
+#notifications:
+  #slack:
+    #rooms:
+    #  - secure: "lgu8TI+tD5m5Gr7nwojbDFU6zV4+3NMrySTgvS6OydEvdivKslgJpwt19RFUeGBmedXhOAv7G4BuoJgc5/zO4CLMHE1JWMONKq++IDP0ls+TvRPMhPMrx6vbHIS79nz/zunKgGcZ1wpqCvigzJ21GgOmUtA6Ji3qg6JfAgQXiFz7CUkp17PtieJo+m0k9GrQCMhwypV1uIYdW6eyxMMHCJYgJOSREhA4oDOGLQcAoC/43WYEAU6j51YMVp8Fo9JfmvG4EvSuCoxKkD+pB0Lv/QRuT3QS1UHf+j4tv6DvnskYoh/1vjkYj+thBRjTN0B2Z6swMH0aDTsBAJfWKHillK5aYBJW3ym7pm8KPrkcWH57tuNU2jlCNrLbFOlXOkELUjcUVZapnxjELQLz8SPrcL0n6xSCMF64o4jH60w3FAgMLZhqkjOHFM5SbumSQ1PH0YauSXnyd6T9Vy33pifSxcOC4Gk4b7V04ebZTejWxCidznVWsc/uT7Y7KuWZ8ZCQdk4bDC83YYW6f4LBfni7c33KNlj6u2CMSiIB+dKh/0qjGIRBh0hV4i89e41643F0yr9E+ejlUqvud3EJfjATVqyJ/DtIdm4EDgh2CSgcZtZlPg9kAnJt36S86sAGlmUz6GHO7A3qVjEmjBGQTs6Gg/93Pm1jDo1qzi6bZNmL6OM="
+    #on_success: always
+    #on_failure: always

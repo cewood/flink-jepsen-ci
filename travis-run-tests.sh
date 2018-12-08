@@ -2,9 +2,11 @@
 
 set -euo pipefail
 
+source travis-retry.sh
+
 # Get test sources & Flink test job
-git clone --depth 50 https://github.com/apache/flink.git
-wget -O DataStreamAllroundTestProgram.jar https://s3.eu-central-1.amazonaws.com/flink-dists-204087123/DataStreamAllroundTestProgram-${TRAVIS_BUILD_NUMBER}.jar
+travis_retry rm -rf flink && git clone --depth 50 https://github.com/apache/flink.git
+travis_retry curl -sSLo DataStreamAllroundTestProgram.jar https://s3.eu-central-1.amazonaws.com/flink-dists-204087123/DataStreamAllroundTestProgram-${TRAVIS_BUILD_NUMBER}.jar
 mv DataStreamAllroundTestProgram.jar flink/flink-jepsen/bin/
 
 # Run tests
@@ -19,6 +21,6 @@ set -e
 test_results_file=store-${TRAVIS_JOB_NUMBER}-${TEST_SUITE}.tgz
 tar -czf ${test_results_file} store/
 eval $(assume-role testing)
-aws s3 cp ${test_results_file} s3://flink-jepsen-test-results --acl public-read
+travis_retry aws s3 cp ${test_results_file} s3://flink-jepsen-test-results --acl public-read
 echo "Test artifacts are uploaded to https://s3.eu-central-1.amazonaws.com/flink-jepsen-test-results/${test_results_file}"
 exit $testrc
