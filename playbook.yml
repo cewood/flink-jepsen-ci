@@ -112,6 +112,18 @@
     become: yes
     tags:
       - lein
+      - packages
+
+  - name: "Force Leiningen to download dependencies"
+    shell: "lein deps"
+    when: inventory_hostname in groups['jepsen_controller']
+    retries: 5
+    delay: 10
+    register: lein_deps
+    until: lein_deps.rc == 0
+    tags:
+      - lein
+      - packages
 
   - name: "Run the tests"
     shell: "~/run-tests.sh {{ run_count }} {{ flink_url }} {{ test_suite }}"
