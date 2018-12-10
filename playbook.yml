@@ -50,13 +50,15 @@
     tags:
       - copy
 
-  - name: "Copy run-tests.sh to controller"
+  - name: "Copy run-tests.sh & test specs to controller"
     synchronize:
       src: "{{ playbook_dir }}/"
       dest: ~/
       rsync_opts: [
         "--no-motd",
         "--include=run-tests.sh",
+        "--include=test-specs",
+        "--include=test-specs/*.edn",
         "--exclude=*"
       ]
     when: inventory_hostname in groups['jepsen_controller']

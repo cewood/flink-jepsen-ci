@@ -9,8 +9,7 @@ jepsen_args=()
 
 function init_jepsen_args {
 	jepsen_args=(--ha-storage-dir hdfs:///flink
-	--job-jar bin/DataStreamAllroundTestProgram.jar
-	--job-args "--environment.parallelism ${1} --state_backend.checkpoint_directory hdfs:///checkpoints --state_backend rocks --state_backend.rocks.incremental true"
+	--test-spec "test-specs/${1}"
 	--nodes-file ~/nodes
 	--tarball ${tarball}
 	--username admin
@@ -18,35 +17,35 @@ function init_jepsen_args {
 }
 
 function run_yarn_session_tests {
-	init_jepsen_args 30
-	lein run test "${jepsen_args[@]}" --nemesis-gen kill-task-managers --deployment-mode yarn-session
-	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers --deployment-mode yarn-session
-	lein run test "${jepsen_args[@]}" --nemesis-gen fail-name-node-during-recovery --deployment-mode yarn-session
+	init_jepsen_args yarn-session.edn
+	lein run test "${jepsen_args[@]}" --nemesis-gen kill-task-managers
+	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers
+	lein run test "${jepsen_args[@]}" --nemesis-gen fail-name-node-during-recovery
 }
 
 function run_yarn_job_tests {
-	init_jepsen_args 30
-	lein run test "${jepsen_args[@]}" --nemesis-gen kill-task-managers --deployment-mode yarn-job
-	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers --deployment-mode yarn-job
-	lein run test "${jepsen_args[@]}" --nemesis-gen fail-name-node-during-recovery --deployment-mode yarn-job
+	init_jepsen_args yarn-job.edn
+	lein run test "${jepsen_args[@]}" --nemesis-gen kill-task-managers
+	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers
+	lein run test "${jepsen_args[@]}" --nemesis-gen fail-name-node-during-recovery
 }
 
 function run_yarn_job_kill_tm_tests {
-	init_jepsen_args 30
-	lein run test "${jepsen_args[@]}" --nemesis-gen kill-single-task-manager --deployment-mode yarn-job
+	init_jepsen_args yarn-job.edn
+	lein run test "${jepsen_args[@]}" --nemesis-gen kill-single-task-manager
 }
 
 function run_mesos_session_tests {
-	init_jepsen_args 30
-	lein run test "${jepsen_args[@]}" --nemesis-gen kill-task-managers --deployment-mode mesos-session
-	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers --deployment-mode mesos-session
-	lein run test "${jepsen_args[@]}" --nemesis-gen fail-name-node-during-recovery --deployment-mode mesos-session
+	init_jepsen_args mesos-session.edn
+	lein run test "${jepsen_args[@]}" --nemesis-gen kill-task-managers
+	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers
+	lein run test "${jepsen_args[@]}" --nemesis-gen fail-name-node-during-recovery
 }
 
 function run_standalone_session_tests {
-	init_jepsen_args 9
-	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers --deployment-mode standalone-session
-	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers --client-gen cancel-job --deployment-mode standalone-session
+	init_jepsen_args standalone-session.edn
+	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers
+	lein run test "${jepsen_args[@]}" --nemesis-gen kill-job-managers --client-gen cancel-jobs
 }
 
 for i in $(seq 1 ${1})

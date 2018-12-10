@@ -1,0 +1,3 @@
+{:dbs  [:hadoop :zookeeper :mesos :flink-mesos-session]
+ :jobs [{:job-jar  "/home/admin/bin/DataStreamAllroundTestProgram.jar"
+         :job-args "--environment.parallelism 30 --state_backend.checkpoint_directory hdfs:///checkpoints --state_backend rocks --state_backend.rocks.incremental true"}]}
