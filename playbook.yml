@@ -5,7 +5,7 @@
   vars:
     ansible_user: admin
     ansible_ssh_private_key_file: id_rsa
-    flink_url: http://apache.mirror.iphh.net/flink/flink-1.5.0/flink-1.5.0-bin-hadoop28-scala_2.11.tgz
+    flink_url: http://mirror.23media.de/apache/flink/flink-1.7.1/flink-1.7.1-bin-hadoop28-scala_2.11.tgz
     run_count: 3
     jepsen_root: "{{ playbook_dir }}/flink/flink-jepsen/"
     test_suite: yarn-session
