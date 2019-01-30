@@ -53,7 +53,7 @@ jobs:
       script:
         - git clone --depth 50 https://github.com/apache/flink.git
         - cd flink
-        - mvn ${MAVEN_COMPILE_OPTIONS} clean package -pl flink-dist,flink-end-to-end-tests/flink-datastream-allround-test -am -DskipTests -Dfast -Dhadoop.version=2.8.3
+        - mvn ${MAVEN_COMPILE_OPTIONS} clean package -pl flink-dist,flink-end-to-end-tests/flink-datastream-allround-test -am -DskipTests -Dfast -Pinclude-hadoop -Dhadoop.version=2.8.3
         - flink_dist=flink-${TRAVIS_BUILD_NUMBER}.tgz
         - tar czvf ${flink_dist} -C flink-dist/target/flink-*-bin/ .
         - eval $(assume-role testing)
