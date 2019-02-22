@@ -7,35 +7,46 @@ env:
   - AWS_PROFILE=testing
   - MAVEN_COMPILE_OPTIONS="-T 1C -nsu -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
 
+dist: xenial
+
 language: java
 
+jdk:
+  - openjdk8
+
 install:
+  # Update package lists
+  - sudo apt-get update
+
   # Install Terraform
   - mkdir -p ~/bin
   - curl -sLo ~/bin/terraform.zip https://releases.hashicorp.com/terraform/0.11.11/terraform_0.11.11_linux_amd64.zip
   - unzip ~/bin/terraform.zip -d ~/bin
   - export PATH="~/bin:$PATH"
 
-  # Upgrade pip
-  - sudo pip install --upgrade pip
+  # Upgrade python & pip
+  - sudo apt-get install python3
+  - sudo apt-get -y install python3-pip
+  - sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+  - sudo apt-get remove python3-pip
+  - sudo apt-get remove python-pip
+  - wget https://bootstrap.pypa.io/get-pip.py
+  - sudo python get-pip.py
 
   # Install Ansible
-  - sudo pip install ansible --progress-bar=off
-
-  # Update package lists
-  - sudo apt-get update
+  - sudo apt-get remove python3-cryptography
+  - sudo pip3 install ansible --progress-bar=off
 
   # Install assume-role tool
   - sudo apt-get install golang-go
   - go get -u github.com/remind101/assume-role
 
   # Install AWS CLI
-  - sudo apt-get remove python-urllib3
-  - sudo pip install --upgrade awscli --progress-bar=off
+  - sudo apt-get remove python3-urllib3
+  - sudo pip3 install --upgrade awscli --progress-bar=off
 
   # Install boto
-  - sudo apt-get remove python-boto
-  - sudo pip install --upgrade boto --progress-bar=off
+  - sudo pip3 install --upgrade boto --progress-bar=off
 
   # Configure AWS credentials
   - ./configure-credentials.sh
