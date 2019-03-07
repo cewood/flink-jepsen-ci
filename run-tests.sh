@@ -9,7 +9,6 @@ jepsen_args=()
 
 function init_jepsen_args {
 	jepsen_args=(--ha-storage-dir hdfs:///flink
-	--job-running-healthy-threshold 10
 	--test-spec "test-specs/${1}"
 	--nodes-file ~/nodes
 	--tarball ${tarball}
