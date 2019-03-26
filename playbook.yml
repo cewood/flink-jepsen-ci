@@ -83,6 +83,11 @@
     tags:
       - packages
 
+  - name: Add jessie-backports repository from debian archive
+    apt_repository:
+      repo: deb http://archive.debian.org/debian/ jessie-backports contrib main non-free
+      state: present
+
   - name: "Install extra dependencies from backports"
     apt:
       name:
